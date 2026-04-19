@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Classic Hair Studio</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231c1c1c'/%3E%3Ctext x='32' y='46' text-anchor='middle' font-size='36' fill='%23b8962e'%3E✂%3C/text%3E%3C/svg%3E"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{
+          --bg:#f8f6f2;--white:#fff;--surface:#fdfcfa;--border:#e8e4de;
+          --text:#1c1c1c;--muted:#666;--faint:#aaa;
+          --gold:#b8962e;--gold-2:#9e7d23;--gold-bg:#fdf8ed;--dark:#1c1c1c;
+          --err:#c0392b;
+          --ok-bg:#edfaf3;--ok-b:#a3d9b8;--ok-t:#145c30;
+          --wa-bg:#fffbeb;--wa-b:#f0d060;--wa-t:#7a5000;
+          --er-bg:#fff5f5;--er-b:#f0b8b8;--er-t:#7a1a1a;
+          --r:8px;--r2:12px;--r3:16px;
+          --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.03);
+          --sh2:0 4px 16px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);
+          --tr:150ms ease;
+        }
+        body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+        .page{display:none}.page.active{display:block;min-height:100vh}
+
+        /* HEADER */
+        .hdr{background:var(--white);border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
+        .logo{font-size:.8rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase}
+        .logo b{color:var(--gold)}
+        .hdr-right{display:flex;align-items:center;gap:10px}
+        .user-info{display:none;font-size:.8rem;color:var(--muted)}
+        .user-info span{color:var(--text);font-weight:600}
+        .btn-out{display:none;font-size:.75rem;font-family:inherit;font-weight:600;color:var(--muted);background:none;border:1.5px solid var(--border);padding:6px 14px;border-radius:var(--r);cursor:pointer;min-height:36px;transition:all var(--tr)}
+        .btn-out:hover{color:var(--text);border-color:var(--text)}
+
+        /* BUTTONS */
+        .btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;padding:12px 20px;font-size:.92rem;font-weight:600;font-family:inherit;border:none;border-radius:var(--r);cursor:pointer;transition:all var(--tr);letter-spacing:.2px}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .btn-dark{background:var(--dark);color:#fff}.btn-dark:hover:not(:disabled){background:#333}
+        .btn-gold{background:var(--gold);color:#fff}.btn-gold:hover:not(:disabled){background:var(--gold-2)}
+        .btn-line{background:var(--white);color:var(--text);border:1.5px solid var(--border)}.btn-line:hover:not(:disabled){border-color:var(--text);background:var(--bg)}
+        .btn-red{background:#e74c3c;color:#fff;min-height:36px}
+        .btn-green{background:#27ae60;color:#fff}.btn-green:hover:not(:disabled){background:#219a52}
+        .btn-sm{min-height:38px;padding:7px 14px;font-size:.78rem;width:auto;display:inline-flex}
+
+        /* FORM */
+        .lbl{display:block;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+        .lbl .opt{font-weight:400;color:var(--faint);text-transform:none;letter-spacing:0}
+        .inp{width:100%;padding:13px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);font-size:16px;font-family:inherit;color:var(--text);outline:none;transition:border-color var(--tr),box-shadow var(--tr)}
+        .inp::placeholder{color:var(--faint)}
+        .inp:focus{border-color:var(--dark);box-shadow:0 0 0 3px rgba(28,28,28,.07)}
+        .field{margin-bottom:16px}
+        .errtxt{font-size:.8rem;color:var(--err);font-weight:500;margin-top:8px;display:none}
+
+        /* LOGIN */
+        .lp-nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:18px 28px;background:rgba(245,241,234,.97);backdrop-filter:blur(10px);border-bottom:1px solid rgba(0,0,0,.06)}
+        .lp-brand{font-size:1.35rem;font-weight:900;letter-spacing:-.03em;color:#1a1710}
+        .lp-brand span{color:#c5a74a}
+        .lp-navlinks{display:flex;gap:32px}
+        .lp-navlinks a{font-weight:700;font-size:1rem;color:#1a1710;text-decoration:none;cursor:pointer}
+        .lp-navlinks a:hover{color:#c5a74a}
+        .lp-hero{background:#f5f1ea;min-height:calc(100vh - 68px);display:flex;justify-content:center;padding:60px 20px 80px}
+        .lp-inner{width:min(580px,100%);text-align:center}
+        .lp-eyebrow{color:#c5a74a;font-weight:800;letter-spacing:.28em;font-size:.82rem;margin:0 0 18px;text-transform:uppercase}
+        .lp-title{font-size:clamp(3rem,10vw,5.5rem);font-weight:900;line-height:.93;letter-spacing:-.05em;color:#1a1710;margin:0 0 22px}
+        .lp-sub{color:#6e6a64;font-size:clamp(.95rem,2vw,1.15rem);line-height:1.65;margin:0 auto 32px;max-width:440px}
+        .lp-btns{display:flex;flex-direction:column;gap:14px;align-items:center;margin-bottom:44px}
+        .lp-btn-primary{width:min(400px,100%);height:62px;background:#1c1814;color:#fff;border:none;border-radius:16px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:all .22s}
+        .lp-btn-primary:hover{background:#111;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+        .lp-btn-outline{width:min(400px,100%);height:62px;background:transparent;color:#1c1814;border:1.5px solid #ccc;border-radius:16px;font-size:1.1rem;font-weight:800;cursor:pointer;transition:all .22s}
+        .lp-btn-outline:hover{background:#ece8e0;transform:translateY(-2px);border-color:#b8a882}
+        .lp-rule{width:50px;height:5px;border-radius:999px;background:#c5a74a;margin:0 auto 40px}
+        .lp-features{display:flex;flex-direction:column;gap:14px}
+        .lp-feat-card{display:flex;align-items:center;gap:18px;background:#fff;border-radius:20px;padding:20px 22px;box-shadow:0 2px 16px rgba(0,0,0,.05);text-align:left}
+        .lp-feat-icon{flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center}
+        .lp-feat-text strong{display:block;font-size:1rem;font-weight:800;color:#1a1710;margin-bottom:4px}
+        .lp-feat-text p{margin:0;font-size:.88rem;color:#6e6a64;line-height:1.45}
+
+        .closure-banner{background:#fff3cd;border-bottom:1px solid #ffc107;color:#7a5000;padding:12px 20px;font-size:.86rem;font-weight:600;text-align:center;display:none}
+        .closure-banner strong{margin-right:6px}
+
+        /* MODAL */
+        .lp-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(20,18,14,.5);backdrop-filter:blur(5px);justify-content:center;align-items:center;padding:20px}
+        .lp-modal.open{display:flex}
+        .lp-modal-box{background:#fff;border-radius:24px;padding:36px 32px;width:min(420px,100%);position:relative;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.2);animation:modalIn .25s cubic-bezier(.16,1,.3,1)}
+        @keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+        .lp-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:#f5f1ea;border:none;cursor:pointer;display:grid;place-items:center;color:#1a1710;transition:background .2s}
+        .lp-close:hover{background:#e6e2da}
+        .switcher{display:flex;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:3px;gap:3px;margin-bottom:28px}
+        .sw-btn{flex:1;padding:10px;font-size:.8rem;font-weight:700;font-family:inherit;background:none;border:none;border-radius:calc(var(--r) - 2px);color:var(--faint);cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all var(--tr);min-height:40px}
+        .sw-btn.on{background:var(--dark);color:#fff}
+        .form-ttl{margin-bottom:24px}
+        .form-ttl h2{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+        .form-ttl p{font-size:.86rem;color:var(--muted)}
+
+        @media(max-width:600px){
+          .lp-nav{padding:14px 16px}.lp-brand{font-size:1.1rem}.lp-navlinks{gap:18px}.lp-navlinks a{font-size:.9rem}
+          .lp-hero{padding:36px 16px 60px}.lp-title{font-size:clamp(2.5rem,14vw,4rem)}
+          .lp-btn-primary,.lp-btn-outline{height:56px;font-size:1rem;border-radius:14px}
+          .lp-modal-box{padding:28px 20px}.lp-feat-card{padding:16px;border-radius:16px}
+        }
+
+        /* BOOKING */
+        .booking-hero{background:var(--dark);padding:26px 20px;text-align:center}
+        .booking-hero h2{font-size:.95rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#fff}
+        .booking-hero h2 b{color:var(--gold)}
+        .booking-hero p{font-size:.76rem;color:rgba(255,255,255,.4);margin-top:4px;letter-spacing:.5px}
+        .bk-body{max-width:600px;margin:0 auto;padding:20px 14px 80px}
+        .card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px 16px;margin-bottom:12px;box-shadow:var(--sh)}
+        .card-lbl{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--faint);margin-bottom:14px}
+        .svc-list{display:flex;flex-direction:column;gap:8px}
+        .svc{display:flex;align-items:center;justify-content:space-between;padding:14px 12px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;min-height:58px;background:var(--surface);transition:all var(--tr);-webkit-tap-highlight-color:transparent}
+        .svc:hover{border-color:#ccc;background:var(--bg)}.svc.on{border-color:var(--gold);background:var(--gold-bg)}
+        .svc-l{display:flex;align-items:center;gap:12px}
+        .chk{width:20px;height:20px;flex-shrink:0;border:1.5px solid #d0ccc6;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all var(--tr);background:var(--white)}
+        .svc.on .chk{background:var(--gold);border-color:var(--gold)}
+        .tick{display:none}
+        .svc.on .tick{display:block;width:11px;height:7px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+        .svc-name{font-size:.9rem;font-weight:600}.svc-dur{font-size:.73rem;color:var(--muted);margin-top:2px}.svc-price{font-size:.9rem;font-weight:700;color:var(--gold)}
+        .barber-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+        .barber{padding:16px 8px;border:1.5px solid var(--border);border-radius:var(--r2);text-align:center;cursor:pointer;background:var(--surface);transition:all var(--tr);-webkit-tap-highlight-color:transparent}
+        .barber:hover{border-color:#ccc}.barber.on{border-color:var(--gold);background:var(--gold-bg)}
+        .barber-av{width:46px;height:46px;background:var(--dark);color:#fff;border-radius:50%;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;transition:background var(--tr)}
+        .barber.on .barber-av{background:var(--gold)}
+        .barber-name{font-size:.83rem;font-weight:600}.barber-spec{font-size:.72rem;color:var(--muted);margin-top:2px}
+        .slots{display:flex;flex-wrap:wrap;gap:8px}
+        .slot{padding:8px 14px;min-height:42px;border:1.5px solid var(--border);border-radius:var(--r);font-size:.8rem;font-weight:500;font-family:inherit;background:var(--white);color:var(--text);cursor:pointer;display:flex;align-items:center;transition:all var(--tr);-webkit-tap-highlight-color:transparent}
+        .slot:hover{border-color:#aaa;background:var(--bg)}.slot.on{background:var(--dark);color:#fff;border-color:var(--dark);font-weight:600}
+        .sum-tbl{width:100%;border-collapse:collapse;font-size:.88rem}
+        .sum-tbl td{padding:9px 0;border-bottom:1px solid var(--border);color:var(--muted)}
+        .sum-tbl td:last-child{text-align:right;font-weight:600;color:var(--text)}
+        .sum-tbl .total td{font-size:.98rem;font-weight:700;color:var(--gold)!important;border-bottom:none;padding-top:14px}
+        .alert{padding:14px 16px;border-radius:var(--r);font-size:.85rem;margin-bottom:12px;display:none;border:1px solid}
+        .alert strong{display:block;margin-bottom:3px}
+        .alert-ok{background:var(--ok-bg);border-color:var(--ok-b);color:var(--ok-t)}
+        .alert-warn{background:var(--wa-bg);border-color:var(--wa-b);color:var(--wa-t)}
+        .alert-err{background:var(--er-bg);border-color:var(--er-b);color:var(--er-t)}
+        .a-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+        .load-txt{font-size:.8rem;color:var(--faint);padding:8px 0;display:none;font-style:italic}
+        hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+        .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:12px 22px;border-radius:var(--r2);font-size:.86rem;font-weight:600;display:none;z-index:9999;box-shadow:var(--sh2);white-space:nowrap}
+
+        /* CUSTOM CALENDAR */
+        .cal-wrap{position:relative}
+        .cal-display{width:100%;padding:13px 14px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);font-size:.92rem;font-family:inherit;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:border-color var(--tr),box-shadow var(--tr);user-select:none}
+        .cal-display:hover,.cal-display.open{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,150,46,.12)}
+        .cal-display .placeholder{color:var(--faint)}.cal-display .cal-icon{color:var(--gold);flex-shrink:0}
+        .cal-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:200;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r2);box-shadow:var(--sh2);width:320px;padding:16px;animation:calIn .18s ease}
+        .cal-popup.open{display:block}
+        @keyframes calIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+        .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+        .cal-nav{width:32px;height:32px;border:none;background:none;cursor:pointer;border-radius:var(--r);display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all var(--tr)}
+        .cal-nav:hover{background:var(--gold-bg);color:var(--gold)}
+        .cal-month-lbl{font-size:.88rem;font-weight:700;color:var(--text)}
+        .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:6px}
+        .cal-day-hd{text-align:center;font-size:.62rem;font-weight:700;color:var(--faint);text-transform:uppercase;padding:4px 0}
+        .cal-day-hd.thu{color:#e09696}
+        .cal-dates{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+        .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:500;border-radius:6px;cursor:pointer;transition:all var(--tr);color:var(--text);border:1.5px solid transparent;position:relative}
+        .cal-cell:hover:not(.disabled):not(.past){background:var(--gold-bg);border-color:var(--gold);color:var(--gold)}
+        .cal-cell.today{font-weight:800}
+        .cal-cell.today::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--gold);border-radius:50%}
+        .cal-cell.selected{background:var(--dark)!important;color:#fff!important;border-color:var(--dark)!important;font-weight:700}
+        .cal-cell.disabled{background:repeating-linear-gradient(135deg,#fdf0f0 0px,#fdf0f0 4px,#fff 4px,#fff 8px);color:#d4a0a0;cursor:not-allowed}
+        .cal-cell.closure-day{background:repeating-linear-gradient(135deg,#fffbeb 0px,#fffbeb 4px,#fff 4px,#fff 8px);color:#c4960a;cursor:not-allowed}
+        .cal-cell.past{color:var(--faint);cursor:not-allowed}.cal-cell.other-month{color:var(--faint)}
+        .cal-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+        .cal-leg-item{display:flex;align-items:center;gap:5px;font-size:.67rem;color:var(--muted)}
+        .cal-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+        /* NOTIFICATION BANNER */
+        .notif-banner{background:linear-gradient(135deg,#1c1c1c,#2a2a2a);color:#fff;padding:14px 20px;display:none;font-size:.84rem;border-radius:var(--r);margin-bottom:14px;border:1px solid rgba(184,150,46,.3)}
+        .notif-banner strong{color:var(--gold)}
+        .notif-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+        .notif-allow{padding:7px 16px;background:var(--gold);color:#fff;border:none;border-radius:var(--r);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+        .notif-deny{padding:7px 16px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);border:none;border-radius:var(--r);font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit}
+        .reminder-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--gold-bg);border:1px solid #e8c86a;border-radius:99px;font-size:.76rem;color:#7a5000;font-weight:600;margin-top:10px}
+
+        /* LOCATION CARD */
+        .loc-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:12px;box-shadow:var(--sh)}
+        .loc-map-preview{width:100%;height:180px;background:#e8e4de;display:block;border:none;cursor:pointer;position:relative;overflow:hidden}
+        .loc-map-preview img{width:100%;height:100%;object-fit:cover}
+        .loc-body{padding:16px}
+        .loc-name{font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:4px}
+        .loc-addr{font-size:.8rem;color:var(--muted);line-height:1.5;margin-bottom:12px}
+        .loc-actions{display:flex;gap:8px;flex-wrap:wrap}
+        .loc-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r);font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;border:none;transition:all var(--tr);text-decoration:none}
+        .loc-btn-dir{background:var(--gold);color:#fff}.loc-btn-dir:hover{background:var(--gold-2)}
+        .loc-btn-map{background:var(--bg);color:var(--text);border:1.5px solid var(--border)}.loc-btn-map:hover{border-color:var(--text)}
+
+        /* REVIEW MODAL */
+        .review-modal{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);justify-content:center;align-items:center;padding:20px}
+        .review-modal.open{display:flex}
+        .review-box{background:#fff;border-radius:24px;padding:32px 28px;width:min(420px,100%);position:relative;box-shadow:0 32px 80px rgba(0,0,0,.25);animation:modalIn .25s cubic-bezier(.16,1,.3,1)}
+        .review-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:#f5f1ea;border:none;cursor:pointer;display:grid;place-items:center;font-size:1.1rem}
+        .review-title{font-size:1.2rem;font-weight:800;margin-bottom:4px}
+        .review-sub{font-size:.84rem;color:var(--muted);margin-bottom:20px}
+        /* Star rating */
+        .star-row{display:flex;gap:8px;margin-bottom:20px}
+        .star-btn{font-size:2rem;background:none;border:none;cursor:pointer;transition:transform .1s;line-height:1}
+        .star-btn:hover,.star-btn.on{transform:scale(1.2)}
+        .star-btn.on{filter:drop-shadow(0 0 4px #f0a500)}
+        .review-comment{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r);font-size:15px;font-family:inherit;resize:vertical;min-height:80px;outline:none;transition:border-color var(--tr)}
+        .review-comment:focus{border-color:var(--dark)}
+        .review-thankyou{text-align:center;padding:20px 0;display:none}
+        .review-thankyou .ty-icon{font-size:3rem;margin-bottom:8px}
+        .review-thankyou .ty-msg{font-size:1rem;font-weight:700;color:var(--text)}
+        .review-thankyou .ty-sub{font-size:.82rem;color:var(--muted);margin-top:4px}
+
+        /* ADMIN */
+        .admin-bar{background:var(--dark);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+        .admin-bar .al{font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#fff}
+        .admin-bar .al b{color:var(--gold)}
+        .admin-bar .ao{font-size:.76rem;color:rgba(255,255,255,.45);cursor:pointer;min-height:44px;display:flex;align-items:center;transition:color var(--tr)}
+        .admin-bar .ao:hover{color:#fff}
+        .admin-wrap{max-width:1100px;margin:0 auto;padding:20px 14px 60px}
+        .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+        @media(min-width:600px){.stats{grid-template-columns:repeat(4,1fr)}}
+        .stat{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px;text-align:center;box-shadow:var(--sh)}
+        .stat-n{font-size:1.8rem;font-weight:700;line-height:1;color:var(--text)}
+        .stat-l{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-top:5px}
+        .tabs-bar{display:flex;border-bottom:1.5px solid var(--border);margin-bottom:18px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .tab{padding:10px 18px;white-space:nowrap;font-size:.76rem;font-weight:700;font-family:inherit;text-transform:uppercase;letter-spacing:.8px;cursor:pointer;color:var(--faint);border-bottom:2px solid transparent;margin-bottom:-1.5px;background:none;border-top:none;border-left:none;border-right:none;transition:all var(--tr);min-height:44px}
+        .tab:hover{color:var(--text)}.tab.on{color:var(--text);border-bottom-color:var(--text)}
+        .tp{display:none}.tp.on{display:block}
+        .tbl-wrap{overflow-x:auto;border-radius:var(--r2);box-shadow:var(--sh)}
+        .tbl{width:100%;border-collapse:collapse;font-size:.81rem;background:var(--white);min-width:600px}
+        .tbl th{background:#f8f6f2;padding:10px 12px;text-align:left;font-size:.67rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap}
+        .tbl td{padding:11px 12px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
+        .tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:#fdfcfa}
+        .bdg{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+        .bdg-ok{background:#d1fae5;color:#065f46}.bdg-can{background:#fee2e2;color:#991b1b}
+        .bdg-don{background:#dbeafe;color:#1e40af}.bdg-y{background:#d1fae5;color:#065f46}.bdg-n{background:#fee2e2;color:#991b1b}
+        .pcrd{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+        .pttl{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--faint);margin-bottom:14px}
+        .irow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+        .ig{flex:1;min-width:110px}
+        .ig label{display:block;font-size:.67rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+        .ig input{width:100%;padding:10px 12px;font-size:16px;font-family:inherit;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);outline:none;transition:border-color var(--tr);min-height:44px}
+        .ig input:focus{border-color:var(--dark)}
+        .lit{display:flex;flex-direction:column;gap:8px}
+        .li{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);flex-wrap:wrap;gap:8px;min-height:52px}
+        .li-info{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .li-name{font-weight:600;font-size:.88rem}.li-sub{font-size:.75rem;color:var(--muted)}.li-act{display:flex;gap:6px}
+        .tbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+        .tbar span{font-size:.8rem;color:var(--muted)}
+        .empty-r{text-align:center;padding:40px;color:var(--muted);font-size:.86rem}
+        .closure-list{display:flex;flex-direction:column;gap:8px}
+        .closure-item{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px;background:#fffbeb;border:1px solid #f0d060;border-radius:var(--r);flex-wrap:wrap;gap:10px}
+        .ci-dates{font-weight:700;font-size:.9rem;color:#5a3a00;margin-bottom:3px}.ci-reason{font-size:.76rem;color:#9a6a00}
+        .ci-badge{display:inline-block;font-size:.67rem;font-weight:700;padding:3px 10px;border-radius:99px;background:#fde68a;color:#7a5000;white-space:nowrap}
+
+        /* BARBER QUEUE */
+        .notif-panel{background:linear-gradient(135deg,#1a1a1a,#242424);border-radius:var(--r2);padding:18px;margin-bottom:16px;border:1px solid rgba(184,150,46,.25)}
+        .notif-panel-title{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .notif-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+        .notif-item:last-child{margin-bottom:0}
+        .notif-item-left .ni-name{font-weight:700;font-size:.88rem;color:#fff}
+        .notif-item-left .ni-svc{font-size:.76rem;color:rgba(255,255,255,.5);margin-top:2px}
+        .notif-item-left .ni-time{font-size:.72rem;color:var(--gold);margin-top:3px;font-weight:600}
+        .ni-badge{font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:99px;background:rgba(184,150,46,.2);color:var(--gold);white-space:nowrap}
+        .ni-badge.soon{background:rgba(231,76,60,.2);color:#e74c3c;animation:pulse 1.5s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+        /* EARNINGS */
+        .earn-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+        .earn-header h3{font-size:1rem;font-weight:700}
+        .earn-filter{display:flex;gap:6px;flex-wrap:wrap}
+        .ef-btn{padding:6px 16px;font-size:.76rem;font-weight:700;font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r);background:var(--white);color:var(--muted);cursor:pointer;transition:all var(--tr)}
+        .ef-btn.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+        .earn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-bottom:20px}
+        .earn-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:18px;box-shadow:var(--sh)}
+        .earn-card-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+        .earn-av{width:42px;height:42px;border-radius:50%;color:#fff;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .earn-name{font-weight:700;font-size:.92rem}.earn-spec{font-size:.72rem;color:var(--muted)}
+        .earn-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+        .earn-stat{text-align:center;padding:10px 4px;background:var(--bg);border-radius:var(--r)}
+        .earn-stat-val{font-size:.95rem;font-weight:800;color:var(--gold);line-height:1}
+        .earn-stat-lbl{font-size:.58rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+        .earn-chart-wrap{position:relative;height:100px}
+        .earn-big-chart{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:20px;box-shadow:var(--sh);margin-bottom:14px}
+        .earn-big-chart h4{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px}
+        .earn-big-wrap{position:relative;height:220px}
+        .earn-barber-sel{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+        .ebs-btn{padding:6px 14px;font-size:.76rem;font-weight:700;font-family:inherit;border:1.5px solid var(--border);border-radius:var(--r);background:var(--white);color:var(--muted);cursor:pointer;transition:all var(--tr)}
+
+        /* REVIEWS */
+        .review-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:10px;box-shadow:var(--sh)}
+        .review-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+        .review-customer{font-weight:700;font-size:.9rem}
+        .review-barber{font-size:.76rem;color:var(--muted)}
+        .review-stars{color:#f0a500;font-size:1.1rem;letter-spacing:2px}
+        .review-comment-txt{font-size:.84rem;color:var(--text);margin-top:6px;line-height:1.5}
+        .review-date{font-size:.7rem;color:var(--faint);margin-top:4px}
+        .review-avg{display:inline-flex;align-items:center;gap:6px;font-size:.86rem;font-weight:700;color:var(--text);background:var(--gold-bg);border:1px solid #e8c86a;border-radius:99px;padding:4px 12px;margin-bottom:14px}
+    </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="page active" id="page-login">
+    <header class="lp-nav">
+        <div class="lp-brand">Classic <span>Hair Studio</span></div>
+        <nav class="lp-navlinks">
+            <a onclick="showLoginForm('c')">Book</a>
+            <a onclick="showLoginForm('a')">Admin</a>
+        </nav>
+    </header>
+    <main class="lp-hero">
+        <div class="lp-inner">
+            <p class="lp-eyebrow">PREMIUM GROOMING EXPERIENCE</p>
+            <h1 class="lp-title">Classic Hair<br>Studio</h1>
+            <p class="lp-sub">Book your appointment in seconds.<br>Expert barbers, exceptional service.</p>
+            <div class="lp-btns">
+                <button class="lp-btn-primary" onclick="showLoginForm('c')">Book Appointment</button>
+                <button class="lp-btn-outline" onclick="showLoginForm('a')">Admin Panel</button>
+            </div>
+            <div class="lp-rule"></div>
+            <div class="lp-features">
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c5a74a" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                    <div class="lp-feat-text"><strong>Expert Barbers</strong><p>Skilled professionals with years of experience</p></div>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c5a74a" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+                    <div class="lp-feat-text"><strong>Flexible Timing</strong><p>Open 9 AM – 9 PM, closed every Thursday</p></div>
+                </div>
+                <div class="lp-feat-card">
+                    <div class="lp-feat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#c5a74a" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+                    <div class="lp-feat-text"><strong>Premium Quality</strong><p>Top-notch products and services</p></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="lp-modal" id="lp-modal">
+        <div class="lp-modal-box">
+            <button class="lp-close" onclick="hideLoginForm()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+            <div class="switcher">
+                <button class="sw-btn on" id="sw-c" onclick="switchRole('c')">Customer</button>
+                <button class="sw-btn"    id="sw-a" onclick="switchRole('a')">Admin</button>
+            </div>
+            <div id="cust-form">
+                <div class="form-ttl"><h2>Book an appointment</h2><p>Enter your details to continue</p></div>
+                <div class="field"><label class="lbl">Full Name</label><input class="inp" type="text" id="in-name" placeholder="Your name" autocomplete="name" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+                <div class="field"><label class="lbl">Phone Number</label><input class="inp" type="tel" id="in-phone" placeholder="10-digit mobile number" maxlength="10" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+                <div class="field"><label class="lbl">Email <span class="opt">(optional)</span></label><input class="inp" type="email" id="in-email" placeholder="example@gmail.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+                <button class="btn btn-dark" id="btn-go" onclick="doLogin()">Continue</button>
+                <div class="errtxt" id="cerr"></div>
+            </div>
+            <div id="admin-form" style="display:none;">
+                <div class="form-ttl"><h2>Admin sign in</h2><p>Enter your PIN to access the dashboard</p></div>
+                <div class="field"><label class="lbl">PIN</label><input class="inp" type="password" id="in-pin" placeholder="Enter admin PIN" onkeydown="if(event.key==='Enter')doAdmin()"/></div>
+                <button class="btn btn-dark" onclick="doAdmin()">Sign In</button>
+                <div class="errtxt" id="aerr"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- BOOKING -->
+<div class="page" id="page-booking">
+    <header class="hdr">
+        <div class="logo">Classic <b>Hair Studio</b></div>
+        <div class="hdr-right">
+            <div class="user-info" id="u-info">Hi, <span id="u-name"></span></div>
+            <button class="btn-out" id="btn-out" onclick="signOut()">Sign Out</button>
+        </div>
+    </header>
+    <div class="closure-banner" id="closure-banner"><strong>🔒 Shop Closed:</strong><span id="closure-banner-txt"></span></div>
+    <div class="booking-hero"><h2>Classic <b>Hair</b> Studio</h2><p>Book your appointment</p></div>
+    <div class="bk-body">
+        <div class="notif-banner" id="notif-banner">
+            <strong>🔔 Never miss your appointment!</strong><br>
+            Allow notifications and we'll remind you <strong>30 minutes before</strong> your slot.
+            <div class="notif-actions">
+                <button class="notif-allow" onclick="requestNotifPermission()">Allow Reminders</button>
+                <button class="notif-deny"  onclick="dismissNotifBanner()">Not now</button>
+            </div>
+        </div>
+        <div class="card"><div class="card-lbl">Step 1 — Select Services</div><div class="svc-list" id="svc-list"><div class="load-txt" style="display:block">Loading...</div></div></div>
+        <div class="card"><div class="card-lbl">Step 2 — Choose Barber</div><div class="barber-grid" id="barber-list"><div class="load-txt" style="display:block">Loading...</div></div></div>
+        <div class="card">
+            <div class="card-lbl">Step 3 — Select Date</div>
+            <div class="cal-wrap" id="cal-wrap">
+                <div class="cal-display" id="cal-display" onclick="toggleCal()">
+                    <span id="cal-display-txt" class="placeholder">Pick a date</span>
+                    <svg class="cal-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                </div>
+                <div class="cal-popup" id="cal-popup">
+                    <div class="cal-head">
+                        <button class="cal-nav" onclick="calNav(-1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+                        <span class="cal-month-lbl" id="cal-month-lbl"></span>
+                        <button class="cal-nav" onclick="calNav(1)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+                    </div>
+                    <div class="cal-days">
+                        <div class="cal-day-hd">Su</div><div class="cal-day-hd">Mo</div><div class="cal-day-hd">Tu</div>
+                        <div class="cal-day-hd">We</div><div class="cal-day-hd thu">Th ✕</div>
+                        <div class="cal-day-hd">Fr</div><div class="cal-day-hd">Sa</div>
+                    </div>
+                    <div class="cal-dates" id="cal-dates"></div>
+                    <div class="cal-legend">
+                        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:#fdf0f0;border:1px solid #e09696"></div><span>Closed (Thu)</span></div>
+                        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:#fffbeb;border:1px solid #f0d060"></div><span>Special closure</span></div>
+                        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--dark)"></div><span>Selected</span></div>
+                        <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--gold-bg);border:1px solid var(--gold)"></div><span>Today</span></div>
+                    </div>
+                </div>
+            </div>
+            <div id="dt-closed-warn" style="display:none;margin-top:8px;font-size:.8rem;color:var(--err);font-weight:500"></div>
+            <div style="margin-top:12px"><button class="btn btn-dark" onclick="getSlots()">Check Available Slots</button></div>
+            <div class="load-txt" id="sl-load">Checking availability...</div>
+        </div>
+        <div class="card" id="sl-card" style="display:none">
+            <div class="card-lbl">Step 4 — Pick a Time Slot</div>
+            <div class="slots" id="sl-grid"></div>
+            <p id="no-sl" style="display:none;font-size:.82rem;color:var(--muted);margin-top:8px">No slots available. Try another date or barber.</p>
+        </div>
+        <div class="card" id="sum-card" style="display:none">
+            <div class="card-lbl">Step 5 — Confirm Booking</div>
+            <table class="sum-tbl">
+                <tr><td>Services</td><td id="s-svc">—</td></tr>
+                <tr><td>Barber</td><td id="s-bar">—</td></tr>
+                <tr><td>Date</td><td id="s-dt">—</td></tr>
+                <tr><td>Time</td><td id="s-tm">—</td></tr>
+                <tr><td>Duration</td><td id="s-dur">—</td></tr>
+                <tr class="total"><td>Total</td><td id="s-tot">—</td></tr>
+            </table>
+            <hr/>
+            <button class="btn btn-gold" onclick="confirm_()">Confirm Appointment</button>
+        </div>
+        <div class="loc-card" id="loc-card" style="display:none">
+            <a class="loc-map-preview" href="https://maps.google.com/?q=15.454546,74.986304" target="_blank" rel="noopener">
+                <img src="https://maps.googleapis.com/maps/api/staticmap?center=15.454546,74.986304&zoom=16&size=600x180&scale=2&markers=color:0x1c1c1c%7C15.454546,74.986304" alt="Shop map" onerror="this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:180px;background:#1c1c1c;color:#b8962e;font-size:2rem\'>📍</div>'"/>
+            </a>
+            <div class="loc-body">
+                <div class="loc-name">✂️ Classic Hair Studio</div>
+                <div class="loc-addr">Bharati Nagar, Sanmati Nagar, Rani Chennamma Nagar<br>Dharwad, Karnataka 580007, India</div>
+                <div class="loc-actions">
+                    <a class="loc-btn loc-btn-dir" href="https://www.google.com/maps/dir/?api=1&destination=15.454546,74.986304" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12l19-9-9 19-2-8-8-2z"/></svg>Get Directions</a>
+                    <a class="loc-btn loc-btn-map" href="https://maps.google.com/?q=15.454546,74.986304" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>View on Maps</a>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-ok" id="a-ok">
+            <strong>✅ Appointment Confirmed!</strong>
+            <span id="a-ok-t"></span>
+            <div id="reminder-pill" style="display:none"><div class="reminder-pill">🔔 Reminder set — 30 min before your slot</div></div>
+            <div class="a-btns"><button class="btn btn-line btn-sm" onclick="resetBk()">Book Another</button></div>
+        </div>
+        <div class="alert alert-warn" id="a-warn"><strong>Barber Unavailable</strong><span id="a-warn-t"></span><div class="a-btns"><button class="btn btn-dark btn-sm" onclick="acceptAlt()">Accept</button><button class="btn btn-line btn-sm" onclick="dismissWarn()">Different Slot</button></div></div>
+        <div class="alert alert-err"  id="a-err"><strong>Error</strong> <span id="a-err-t"></span></div>
+    </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+    <div class="admin-bar"><div class="al">Classic <b>Hair Studio</b></div><span class="ao" onclick="adminOut()">Sign Out</span></div>
+    <div class="admin-wrap">
+        <div class="stats">
+            <div class="stat"><div class="stat-n" id="st-tot">—</div><div class="stat-l">Bookings</div></div>
+            <div class="stat"><div class="stat-n" id="st-day">—</div><div class="stat-l">Today</div></div>
+            <div class="stat"><div class="stat-n" id="st-svc">—</div><div class="stat-l">Services</div></div>
+            <div class="stat"><div class="stat-n" id="st-bar">—</div><div class="stat-l">Barbers</div></div>
+        </div>
+        <div class="tabs-bar">
+            <button class="tab on" onclick="switchTab('tp-appt',this)">Appointments</button>
+            <button class="tab"    onclick="switchTab('tp-today',this);renderTodayQueue()">🔔 Today's Queue</button>
+            <button class="tab"    onclick="switchTab('tp-svc',this)">Services</button>
+            <button class="tab"    onclick="switchTab('tp-bar',this)">Barbers</button>
+            <button class="tab"    onclick="switchTab('tp-closure',this);renderClosures()">🔒 Closures</button>
+            <button class="tab"    onclick="switchTab('tp-earn',this);renderEarnings()">📊 Earnings</button>
+            <button class="tab"    onclick="switchTab('tp-reviews',this);renderReviews()">⭐ Reviews</button>
+        </div>
+
+        <!-- APPOINTMENTS -->
+        <div class="tp on" id="tp-appt">
+            <div class="tbar"><span>All bookings — newest first</span><button class="btn btn-line btn-sm" onclick="loadAdmin()">Refresh</button></div>
+            <div class="tbl-wrap">
+                <table class="tbl">
+                    <thead><tr><th>Date</th><th>Time</th><th>Customer</th><th>Phone</th><th>Services</th><th>Barber</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="appt-body"><tr><td colspan="8" class="empty-r">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TODAY QUEUE -->
+        <div class="tp" id="tp-today">
+            <div class="notif-panel">
+                <div class="notif-panel-title">
+                    <span>🔔</span> Upcoming Appointments Today
+                    <button class="btn btn-sm" style="margin-left:auto;background:rgba(184,150,46,.15);color:var(--gold);border:1px solid rgba(184,150,46,.3);min-height:30px;padding:4px 10px;font-size:.7rem" onclick="renderTodayQueue()">Refresh</button>
+                </div>
+                <div id="today-queue-list"><div style="color:rgba(255,255,255,.4);font-size:.82rem;text-align:center;padding:20px">Loading...</div></div>
+            </div>
+            <div class="pcrd"><div class="pttl">💰 Today's Revenue (Completed Services)</div><div id="today-revenue-summary" style="font-size:.86rem;color:var(--muted)">Loading...</div></div>
+        </div>
+
+        <!-- SERVICES -->
+        <div class="tp" id="tp-svc">
+            <div class="pcrd">
+                <div class="pttl">Add New Service</div>
+                <div class="irow">
+                    <div class="ig"><label>Name</label><input type="text" id="ns-name" placeholder="Haircut"/></div>
+                    <div class="ig"><label>Duration (min)</label><input type="number" id="ns-dur" placeholder="30"/></div>
+                    <div class="ig"><label>Price (₹)</label><input type="number" id="ns-price" placeholder="150"/></div>
+                    <div style="padding-bottom:1px"><button class="btn btn-gold btn-sm" onclick="addSvc()" style="min-height:44px;padding:0 18px">Add</button></div>
+                </div>
+                <div class="errtxt" id="svc-err"></div>
+            </div>
+            <div class="pcrd"><div class="pttl">Current Services</div><div class="lit" id="svc-lit"><div class="empty-r">Loading...</div></div></div>
+        </div>
+
+        <!-- BARBERS -->
+        <div class="tp" id="tp-bar">
+            <div class="pcrd">
+                <div class="pttl">Add New Barber</div>
+                <div class="irow">
+                    <div class="ig"><label>Name</label><input type="text" id="nb-name" placeholder="Ravi"/></div>
+                    <div class="ig"><label>Specialty</label><input type="text" id="nb-spec" placeholder="Hair, Beard, All"/></div>
+                    <div class="ig"><label>UPI ID</label><input type="text" id="nb-upi" placeholder="ravi@upi (optional)"/></div>
+                    <div style="padding-bottom:1px"><button class="btn btn-gold btn-sm" onclick="addBar()" style="min-height:44px;padding:0 18px">Add</button></div>
+                </div>
+                <div class="errtxt" id="bar-err"></div>
+            </div>
+            <div class="pcrd"><div class="pttl">All Barbers</div><div class="lit" id="bar-lit"><div class="empty-r">Loading...</div></div></div>
+        </div>
+
+        <!-- CLOSURES -->
+        <div class="tp" id="tp-closure">
+            <div class="pcrd">
+                <div class="pttl">📢 Announce Special Closure</div>
+                <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">Block bookings for a custom date range. Thursdays are always blocked automatically.</p>
+                <div class="irow">
+                    <div class="ig"><label>From Date</label><input type="date" id="cl-from"/></div>
+                    <div class="ig"><label>To Date</label><input type="date" id="cl-to"/></div>
+                    <div class="ig" style="min-width:180px"><label>Reason (optional)</label><input type="text" id="cl-reason" placeholder="e.g. Diwali holidays"/></div>
+                    <div style="padding-bottom:1px"><button class="btn btn-gold btn-sm" onclick="addClosure()" style="min-height:44px;padding:0 18px">Announce</button></div>
+                </div>
+                <div class="errtxt" id="cl-err"></div>
+            </div>
+            <div class="pcrd"><div class="pttl">Active &amp; Upcoming Closures</div><div class="closure-list" id="closure-list"><div class="empty-r">No closures announced.</div></div></div>
+        </div>
+
+        <!-- EARNINGS -->
+        <div class="tp" id="tp-earn">
+            <div class="earn-header">
+                <h3>💰 Barber Earnings Tracker <small style="font-size:.7rem;color:var(--muted);font-weight:400">(based on completed services)</small></h3>
+                <div class="earn-filter">
+                    <button class="ef-btn on" onclick="setEarnPeriod('day',this)">Today</button>
+                    <button class="ef-btn"    onclick="setEarnPeriod('week',this)">This Week</button>
+                    <button class="ef-btn"    onclick="setEarnPeriod('month',this)">This Month</button>
+                </div>
+            </div>
+            <div class="earn-grid" id="earn-grid"><div class="empty-r">Loading earnings...</div></div>
+            <div class="earn-big-chart">
+                <h4>Revenue Comparison — <span id="earn-period-lbl">Today</span></h4>
+                <div class="earn-big-wrap"><canvas id="earn-bar-chart"></canvas></div>
+            </div>
+            <div class="earn-big-chart">
+                <h4>Daily Revenue Trend — Last 14 Days</h4>
+                <div class="earn-barber-sel" id="earn-barber-sel"></div>
+                <div class="earn-big-wrap"><canvas id="earn-line-chart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- REVIEWS -->
+        <div class="tp" id="tp-reviews">
+            <div class="tbar"><span>Customer reviews — newest first</span><button class="btn btn-line btn-sm" onclick="renderReviews()">Refresh</button></div>
+            <div id="reviews-list"><div class="empty-r">Loading...</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- REVIEW MODAL (shown to customer after barber marks Done) -->
+<div class="review-modal" id="review-modal">
+    <div class="review-box">
+        <button class="review-close" onclick="skipReview()">✕</button>
+        <div id="review-form-area">
+            <div class="review-title">✂️ How was your experience?</div>
+            <div class="review-sub" id="review-sub-txt">Rate your service with <strong id="review-barber-name"></strong></div>
+            <div class="star-row" id="star-row">
+                <button class="star-btn" onclick="setRating(1)">⭐</button>
+                <button class="star-btn" onclick="setRating(2)">⭐</button>
+                <button class="star-btn" onclick="setRating(3)">⭐</button>
+                <button class="star-btn" onclick="setRating(4)">⭐</button>
+                <button class="star-btn" onclick="setRating(5)">⭐</button>
+            </div>
+            <div class="field">
+                <textarea class="review-comment" id="review-comment" placeholder="Tell us more (optional)..." rows="3"></textarea>
+            </div>
+            <button class="btn btn-gold" onclick="submitReview()">Submit Review</button>
+            <button class="btn btn-line" style="margin-top:8px" onclick="skipReview()">Skip</button>
+        </div>
+        <div class="review-thankyou" id="review-thankyou">
+            <div class="ty-icon">🙏</div>
+            <div class="ty-msg">Thank you for your feedback!</div>
+            <div class="ty-sub">Your review helps us improve our service.</div>
+            <button class="btn btn-dark" style="margin-top:16px;max-width:200px" onclick="closeReviewModal()">Done</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    /* ================================================================
+       CONFIG & STATE
+    ================================================================ */
+    const BASE="http://localhost:8081";
+    const PIN="admin123";
+    const SHOP_NAME="Classic Hair Studio";
+
+    let me=null,svcs=[],bars=[];
+    let selSvcs=[],selBar=null,selBarN=null,selSlot=null,altBar=null;
+    let earnPeriod="day",earnBarChart=null,earnLineChart=null,selectedTrendBarber=null;
+    let calYear,calMonth,calSelectedDate=null;
+    let scheduledReminders=[];
+    // Active booking polling
+    let activeApptId=null,activeApptBarberId=null,activeApptBarberName="",activeApptSvcNames="";
+    let donePollingTimer=null;
+    // Review state
+    let reviewApptId=null,reviewBarberId=null,reviewBarberName="",reviewRating=0;
+
+    const COLORS=["#b8962e","#2e86b8","#2eb87a","#c0392b","#8b2eb8","#b86b2e","#2eb8b8","#e67e22"];
+
+    /* ================================================================
+       DATE HELPERS
+    ================================================================ */
+    function todayStr(){return new Date().toISOString().split("T")[0]}
+    function isThursday(ds){const[y,m,d]=ds.split("-").map(Number);return new Date(y,m-1,d).getDay()===4}
+    function getClosures(){try{return JSON.parse(localStorage.getItem("hs_closures")||"[]")}catch{return[]}}
+    function saveClosures(a){localStorage.setItem("hs_closures",JSON.stringify(a))}
+    function getActiveClosure(ds){return getClosures().find(c=>ds>=c.from&&ds<=c.to)||null}
+    function isInClosure(ds){return!!getActiveClosure(ds)}
+    function fmtDate(ds){const[y,m,d]=ds.split("-");const mn=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];return`${mn[+m-1]} ${+d}, ${y}`}
+    function fmtDateLong(ds){const[y,m,d]=ds.split("-");const mn=["January","February","March","April","May","June","July","August","September","October","November","December"];const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];const dow=new Date(+y,+m-1,+d).getDay();return`${days[dow]}, ${mn[+m-1]} ${+d}`}
+    function lastNDays(n){const a=[];for(let i=n-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);a.push(d.toISOString().split("T")[0])}return a}
+    function periodRange(p){const t=new Date(),ts=t.toISOString().split("T")[0];if(p==="day")return{from:ts,to:ts};if(p==="week"){const day=t.getDay(),mon=new Date(t);mon.setDate(t.getDate()-(day===0?6:day-1));const sun=new Date(mon);sun.setDate(mon.getDate()+6);return{from:mon.toISOString().split("T")[0],to:sun.toISOString().split("T")[0]}}if(p==="month"){const y=t.getFullYear(),m=String(t.getMonth()+1).padStart(2,"0");const last=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();return{from:`${y}-${m}-01`,to:`${y}-${m}-${String(last).padStart(2,"0")}`}}}
+    function starsHtml(r){return"★".repeat(r)+"☆".repeat(5-r)}
+
+    /* ================================================================
+       CUSTOM CALENDAR
+    ================================================================ */
+    function initCal(){const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();renderCal()}
+    function toggleCal(){const p=document.getElementById("cal-popup"),d=document.getElementById("cal-display");if(p.classList.contains("open")){closeCal()}else{p.classList.add("open");d.classList.add("open")}}
+    function closeCal(){document.getElementById("cal-popup").classList.remove("open");document.getElementById("cal-display").classList.remove("open")}
+    document.addEventListener("click",e=>{const w=document.getElementById("cal-wrap");if(w&&!w.contains(e.target))closeCal()});
+    function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++}if(calMonth<0){calMonth=11;calYear--}renderCal()}
+    function renderCal(){
+      const months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+      document.getElementById("cal-month-lbl").textContent=`${months[calMonth]} ${calYear}`;
+      const grid=document.getElementById("cal-dates");grid.innerHTML="";
+      const today=todayStr(),firstDay=new Date(calYear,calMonth,1).getDay();
+      const daysInMonth=new Date(calYear,calMonth+1,0).getDate(),daysInPrev=new Date(calYear,calMonth,0).getDate();
+      for(let i=0;i<firstDay;i++){const c=document.createElement("div");c.className="cal-cell other-month past";c.textContent=daysInPrev-firstDay+1+i;grid.appendChild(c)}
+      for(let d=1;d<=daysInMonth;d++){
+        const ds=`${calYear}-${String(calMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        const c=document.createElement("div");c.className="cal-cell";c.textContent=d;
+        const isPast=ds<today,isThu=isThursday(ds),isClos=isInClosure(ds),isSel=ds===calSelectedDate,isToday=ds===today;
+        if(isSel)c.classList.add("selected");
+        else if(isPast)c.classList.add("past");
+        else if(isThu){c.classList.add("disabled");c.title="Closed — Thursday"}
+        else if(isClos){c.classList.add("closure-day");const cl=getActiveClosure(ds);c.title="Closed"+(cl.reason?": "+cl.reason:"")}
+        else c.onclick=()=>selectDate(ds);
+        if(isToday&&!isSel)c.classList.add("today");
+        grid.appendChild(c);
+      }
+      const total=firstDay+daysInMonth,trailing=total%7===0?0:7-(total%7);
+      for(let i=1;i<=trailing;i++){const c=document.createElement("div");c.className="cal-cell other-month past";c.textContent=i;grid.appendChild(c)}
+    }
+    function selectDate(ds){
+      calSelectedDate=ds;
+      const txt=document.getElementById("cal-display-txt");txt.textContent=fmtDateLong(ds);txt.classList.remove("placeholder");
+      renderCal();closeCal();
+      document.getElementById("dt-closed-warn").style.display="none";
+      document.getElementById("sl-card").style.display="none";document.getElementById("sum-card").style.display="none";selSlot=null;
+    }
+
+    /* ================================================================
+       SLOT HELPERS
+    ================================================================ */
+    function filterPastSlots(slots,date){
+      if(date!==todayStr())return slots;
+      const now=new Date(),nowMins=now.getHours()*60+now.getMinutes();
+      return slots.filter(s=>parseSlotToMins(s)>nowMins);
+    }
+    function parseSlotToMins(slot){
+      const m=slot.trim().match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+      if(!m){const m2=slot.trim().match(/^(\d+):(\d+)$/);if(m2)return parseInt(m2[1])*60+parseInt(m2[2]);return 0}
+      let h=parseInt(m[1]),min=parseInt(m[2]);const p=m[3].toUpperCase();
+      if(p==="PM"&&h!==12)h+=12;if(p==="AM"&&h===12)h=0;return h*60+min;
+    }
+
+    /* ================================================================
+       NOTIFICATIONS
+    ================================================================ */
+    function checkNotifBanner(){
+      if(typeof Notification==="undefined")return;
+      if(Notification.permission==="default"&&!localStorage.getItem("hs_notif_dismissed"))
+        document.getElementById("notif-banner").style.display="block";
+    }
+    function requestNotifPermission(){
+      Notification.requestPermission().then(p=>{
+        document.getElementById("notif-banner").style.display="none";
+        showToast(p==="granted"?"✅ Reminders enabled!":"Notifications blocked.");
+      });
+    }
+    function dismissNotifBanner(){localStorage.setItem("hs_notif_dismissed","1");document.getElementById("notif-banner").style.display="none"}
+    function scheduleReminder(date,timeStr,barberName,services){
+      if(typeof Notification==="undefined")return false;
+      const[y,m,d]=date.split("-").map(Number);
+      const slotMins=parseSlotToMins(timeStr);
+      const apptTime=new Date(y,m-1,d,Math.floor(slotMins/60),slotMins%60);
+      const delay=new Date(apptTime.getTime()-30*60*1000).getTime()-Date.now();
+      if(delay<=0)return false;
+      const tid=setTimeout(()=>{
+        if(Notification.permission==="granted"){
+          new Notification("✂️ Appointment in 30 min!",{
+            body:`With ${barberName} — ${fmtDate(date)} at ${timeStr}\n💈 ${services}\n📍 Bharati Nagar, Dharwad`,
+            tag:"hs-reminder",requireInteraction:true
+          });
+        }
+      },delay);
+      scheduledReminders.push(tid);return true;
+    }
+
+    /* ================================================================
+       POLLING — detect when barber marks Done
+    ================================================================ */
+    function startDonePolling(){
+      stopDonePolling();
+      if(!activeApptId)return;
+      donePollingTimer=setInterval(async()=>{
+        try{
+          const appt=await fetch(`${BASE}/api/appointments/${activeApptId}`).then(r=>r.json());
+          if(appt&&appt.status==="DONE"){
+            stopDonePolling();
+            // Show review modal on customer screen
+            openReviewModal(activeApptId,activeApptBarberId,activeApptBarberName,activeApptSvcNames);
+          }
+        }catch{/* ignore */}
+      },5000);
+    }
+    function stopDonePolling(){if(donePollingTimer){clearInterval(donePollingTimer);donePollingTimer=null}}
+
+    /* ================================================================
+       REVIEW MODAL
+    ================================================================ */
+    function openReviewModal(apptId,barberId,barberName,svcNames){
+      reviewApptId=apptId;reviewBarberId=barberId;reviewBarberName=barberName;reviewRating=0;
+      document.getElementById("review-barber-name").textContent=barberName;
+      document.getElementById("review-sub-txt").textContent=`Rate your service: ${svcNames}`;
+      document.getElementById("review-comment").value="";
+      document.getElementById("review-form-area").style.display="block";
+      document.getElementById("review-thankyou").style.display="none";
+      setRating(0);
+      document.getElementById("review-modal").classList.add("open");
+      if(navigator.vibrate)navigator.vibrate([200,100,200]);
+      showToast("💈 Service complete! Please leave a review.");
+    }
+    function setRating(r){
+      reviewRating=r;
+      document.querySelectorAll(".star-btn").forEach((btn,i)=>{
+        btn.classList.toggle("on",i<r);
+        btn.textContent=i<r?"⭐":"☆";
+      });
+    }
+    async function submitReview(){
+      if(reviewRating===0){showToast("Please select a star rating.");return}
+      const comment=document.getElementById("review-comment").value.trim();
+      try{
+        await fetch(`${BASE}/api/reviews`,{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            appointmentId:reviewApptId,
+            userId:me?.id||"",
+            userName:me?.name||"Customer",
+            barberId:reviewBarberId,
+            barberName:reviewBarberName,
+            rating:reviewRating,
+            comment:comment
+          })
+        });
+      }catch{/* server may not have it yet, still show thank you */}
+      document.getElementById("review-form-area").style.display="none";
+      document.getElementById("review-thankyou").style.display="block";
+    }
+    function skipReview(){document.getElementById("review-modal").classList.remove("open")}
+    function closeReviewModal(){document.getElementById("review-modal").classList.remove("open")}
+
+    /* ================================================================
+       INIT
+    ================================================================ */
+    window.onload=()=>{
+      initCal();
+      document.getElementById("cl-from").min=todayStr();
+      document.getElementById("cl-to").min=todayStr();
+      checkNotifBanner();
+    };
+
+    /* ================================================================
+       LOGIN
+    ================================================================ */
+    function showLoginForm(role){document.getElementById("lp-modal").classList.add("open");switchRole(role)}
+    function hideLoginForm(){document.getElementById("lp-modal").classList.remove("open")}
+    document.addEventListener("click",e=>{if(e.target===document.getElementById("lp-modal"))hideLoginForm()});
+    function pg(id){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0)}
+    function switchRole(r){
+      const a=r==="a";
+      document.getElementById("cust-form").style.display=a?"none":"block";
+      document.getElementById("admin-form").style.display=a?"block":"none";
+      document.getElementById("sw-c").classList.toggle("on",!a);document.getElementById("sw-a").classList.toggle("on",a);
+      document.getElementById("cerr").style.display="none";document.getElementById("aerr").style.display="none";
+      setTimeout(()=>document.getElementById(a?"in-pin":"in-name").focus(),60);
+    }
+    function doAdmin(){
+      const pin=document.getElementById("in-pin").value,e=document.getElementById("aerr");
+      if(pin===PIN){document.getElementById("in-pin").value="";e.style.display="none";hideLoginForm();pg("page-admin");loadAdmin()}
+      else{e.textContent="Incorrect PIN.";e.style.display="block";document.getElementById("in-pin").value=""}
+    }
+    function adminOut(){pg("page-login");switchRole("a")}
+    async function doLogin(){
+      const name=document.getElementById("in-name").value.trim(),phone=document.getElementById("in-phone").value.trim(),email=document.getElementById("in-email").value.trim();
+      const e=document.getElementById("cerr");e.style.display="none";
+      if(!name){e.textContent="Please enter your name.";e.style.display="block";return}
+      if(!/^\d{10}$/.test(phone)){e.textContent="Enter a valid 10-digit phone number.";e.style.display="block";return}
+      const btn=document.getElementById("btn-go");btn.disabled=true;btn.textContent="Please wait...";
+      try{
+        const d=await fetch(`${BASE}/api/users/login?phone=${phone}`).then(r=>r.json());
+        me=d.status==="EXISTS"?d.user:await fetch(`${BASE}/api/users`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone,email})}).then(r=>r.json());
+        hideLoginForm();goBook();
+      }catch{e.textContent="Cannot connect. Make sure Spring Boot is running on port 8081.";e.style.display="block";btn.disabled=false;btn.textContent="Continue"}
+    }
+    function signOut(){
+      me=null;selSvcs=[];selBar=null;selBarN=null;selSlot=null;altBar=null;calSelectedDate=null;
+      document.getElementById("cal-display-txt").textContent="Pick a date";document.getElementById("cal-display-txt").classList.add("placeholder");
+      ["in-name","in-phone","in-email"].forEach(id=>document.getElementById(id).value="");
+      document.getElementById("btn-go").textContent="Continue";document.getElementById("btn-go").disabled=false;
+      document.getElementById("cerr").style.display="none";
+      document.getElementById("u-info").style.display="none";document.getElementById("btn-out").style.display="none";
+      scheduledReminders.forEach(t=>clearTimeout(t));scheduledReminders=[];
+      activeApptId=null;stopDonePolling();
+      switchRole("c");pg("page-login");
+    }
+
+    /* ================================================================
+       BOOKING
+    ================================================================ */
+    async function goBook(){
+      pg("page-booking");
+      document.getElementById("u-info").style.display="flex";document.getElementById("btn-out").style.display="block";
+      document.getElementById("u-name").textContent=me.name;
+      const today=todayStr(),banner=document.getElementById("closure-banner"),cl=getActiveClosure(today);
+      if(cl){document.getElementById("closure-banner-txt").textContent=` We're closed ${fmtDate(cl.from)} – ${fmtDate(cl.to)}${cl.reason?` (${cl.reason})`:""}. Sorry!`;banner.style.display="block"}
+      else if(isThursday(today)){document.getElementById("closure-banner-txt").textContent=" We're closed today (Thursday). See you tomorrow!";banner.style.display="block"}
+      else banner.style.display="none";
+      initCal();
+      await Promise.all([loadSvcs(),loadBars()]);
+    }
+    async function loadSvcs(){
+      try{
+        svcs=await fetch(`${BASE}/api/services`).then(r=>r.json());
+        const el=document.getElementById("svc-list");el.innerHTML="";
+        if(!svcs.length){el.innerHTML='<p style="font-size:.84rem;color:var(--muted)">No services yet.</p>';return}
+        svcs.forEach(s=>{
+          const d=document.createElement("div");d.className="svc";d.dataset.id=s.id;
+          d.innerHTML=`<div class="svc-l"><div class="chk"><div class="tick"></div></div><div><div class="svc-name">${s.name}</div><div class="svc-dur">${s.duration} min</div></div></div><div class="svc-price">₹${s.price}</div>`;
+          d.onclick=()=>{d.classList.toggle("on");selSvcs=selSvcs.includes(s.id)?selSvcs.filter(x=>x!==s.id):[...selSvcs,s.id];updSum()};
+          el.appendChild(d);
+        });
+      }catch{document.getElementById("svc-list").innerHTML='<p style="color:var(--err);font-size:.84rem">Could not load services.</p>'}
+    }
+    async function loadBars(){
+      try{
+        bars=await fetch(`${BASE}/api/barbers`).then(r=>r.json());
+        const el=document.getElementById("barber-list");el.innerHTML="";
+        bars.forEach(b=>{
+          const d=document.createElement("div");d.className="barber";d.dataset.id=b.id;
+          d.innerHTML=`<div class="barber-av">${b.name[0].toUpperCase()}</div><div class="barber-name">${b.name}</div><div class="barber-spec">${b.specialty}</div>`;
+          d.onclick=()=>{document.querySelectorAll(".barber").forEach(c=>c.classList.remove("on"));d.classList.add("on");selBar=b.id;selBarN=b.name;updSum()};
+          el.appendChild(d);
+        });
+      }catch{document.getElementById("barber-list").innerHTML='<p style="color:var(--err);font-size:.84rem">Could not load barbers.</p>'}
+    }
+    async function getSlots(){
+      hideA();selSlot=null;
+      if(!selSvcs.length){showE("Please select at least one service.");return}
+      if(!selBar){showE("Please select a barber.");return}
+      const dt=calSelectedDate;
+      if(!dt){showE("Please select a date from the calendar.");return}
+      if(isThursday(dt)){showE("We're closed every Thursday.");return}
+      const cl=getActiveClosure(dt);
+      if(cl){showE(`Shop closed ${fmtDate(cl.from)} – ${fmtDate(cl.to)}${cl.reason?": "+cl.reason:""}. Choose another date.`);return}
+      document.getElementById("sl-load").style.display="block";
+      document.getElementById("sl-card").style.display="none";document.getElementById("sum-card").style.display="none";
+      try{
+        const p=new URLSearchParams();selSvcs.forEach(id=>p.append("serviceIds",id));p.append("barberId",selBar);p.append("date",dt);
+        let sl=await fetch(`${BASE}/api/appointments/slots?${p}`).then(r=>r.json());
+        sl=filterPastSlots(sl,dt);
+        document.getElementById("sl-load").style.display="none";document.getElementById("sl-card").style.display="block";
+        const g=document.getElementById("sl-grid");g.innerHTML="";
+        document.getElementById("no-sl").style.display=sl.length?"none":"block";
+        sl.forEach(s=>{
+          const b=document.createElement("div");b.className="slot";b.textContent=s;
+          b.onclick=()=>{document.querySelectorAll(".slot").forEach(x=>x.classList.remove("on"));b.classList.add("on");selSlot=s;updSum();document.getElementById("sum-card").style.display="block"};
+          g.appendChild(b);
+        });
+      }catch{document.getElementById("sl-load").style.display="none";showE("Could not fetch slots.")}
+    }
+    function updSum(){
+      const ss=svcs.filter(s=>selSvcs.includes(s.id));
+      document.getElementById("s-svc").textContent=ss.map(s=>s.name).join(", ")||"—";
+      document.getElementById("s-bar").textContent=selBarN||"—";
+      document.getElementById("s-dt").textContent=calSelectedDate?fmtDateLong(calSelectedDate):"—";
+      document.getElementById("s-tm").textContent=selSlot||"—";
+      document.getElementById("s-dur").textContent=ss.length?ss.reduce((a,s)=>a+s.duration,0)+" min":"—";
+      document.getElementById("s-tot").textContent=ss.length?"₹"+ss.reduce((a,s)=>a+s.price,0):"—";
+    }
+    async function confirm_(){hideA();if(!selSlot){showE("Please pick a time slot.");return}await sendBk(me.id,selSvcs,selBar,calSelectedDate,selSlot)}
+    async function sendBk(uid,sids,bid,dt,tm){
+      try{
+        const p=new URLSearchParams();p.append("userId",uid);sids.forEach(id=>p.append("serviceIds",id));p.append("barberId",bid);p.append("date",dt);p.append("time",tm);
+        const d=await fetch(`${BASE}/api/appointments?${p}`,{method:"POST"}).then(r=>r.json());
+        if(d.status==="BOOKED"){
+          document.getElementById("sl-card").style.display="none";document.getElementById("sum-card").style.display="none";
+          const timeDisplay=d.startTime||tm;
+          document.getElementById("a-ok-t").textContent=` ${selBarN} — ${fmtDate(dt)} at ${timeDisplay}`;
+          showA("ok");showToast("Appointment confirmed ✅");
+          document.getElementById("loc-card").style.display="block";
+          const svcNames=svcs.filter(s=>sids.includes(s.id)).map(s=>s.name).join(", ");
+          const reminded=scheduleReminder(dt,timeDisplay,selBarN,svcNames);
+          document.getElementById("reminder-pill").style.display=(reminded&&Notification.permission==="granted")?"block":"none";
+          // Store info for polling
+          activeApptId=d.id||null;
+          activeApptBarberId=bid;
+          activeApptBarberName=selBarN;
+          activeApptSvcNames=svcNames;
+          startDonePolling(); // poll until barber marks Done → review modal pops
+        }
+        else if(d.status==="BUSY"){altBar=d.alternativeBarber;const n=bars.find(b=>b.id===altBar)?.name||"Another barber";document.getElementById("a-warn-t").textContent=` ${selBarN} is unavailable at ${tm}. ${n} is free — accept?`;showA("warn")}
+        else showE("No barbers available. Try a different slot.");
+      }catch{showE("Booking failed. Check server connection.")}
+    }
+    function acceptAlt(){hideA();selBar=altBar;selBarN=bars.find(b=>b.id===altBar)?.name||"Barber";sendBk(me.id,selSvcs,altBar,calSelectedDate,selSlot)}
+    function dismissWarn(){hideA();document.getElementById("sl-card").style.display="block";document.getElementById("sum-card").style.display="block"}
+    function resetBk(){
+      selSvcs=[];selBar=null;selBarN=null;selSlot=null;altBar=null;calSelectedDate=null;
+      activeApptId=null;stopDonePolling();
+      document.getElementById("cal-display-txt").textContent="Pick a date";document.getElementById("cal-display-txt").classList.add("placeholder");
+      document.querySelectorAll(".svc,.barber").forEach(e=>e.classList.remove("on"));
+      document.getElementById("sl-card").style.display="none";document.getElementById("sum-card").style.display="none";
+      document.getElementById("reminder-pill").style.display="none";document.getElementById("loc-card").style.display="none";
+      initCal();hideA();window.scrollTo({top:0,behavior:"smooth"});
+    }
+
+    /* ================================================================
+       ADMIN CORE
+    ================================================================ */
+    async function loadAdmin(){await Promise.all([loadAppts(),loadAdSvcs(),loadAdBars()])}
+    async function loadAppts(){
+      const tb=document.getElementById("appt-body");tb.innerHTML=`<tr><td colspan="8" class="empty-r">Loading...</td></tr>`;
+      try{
+        const[a,u,b,s]=await Promise.all([fetch(`${BASE}/api/appointments/all`),fetch(`${BASE}/api/users/all`),fetch(`${BASE}/api/barbers/all`),fetch(`${BASE}/api/services`)].map(r=>r.then(x=>x.json())));
+        const td=todayStr();
+        document.getElementById("st-tot").textContent=a.length;
+        document.getElementById("st-day").textContent=a.filter(x=>x.date===td).length;
+        document.getElementById("st-svc").textContent=s.length;
+        document.getElementById("st-bar").textContent=b.length;
+        if(!a.length){tb.innerHTML=`<tr><td colspan="8" class="empty-r">No appointments yet.</td></tr>`;return}
+        tb.innerHTML="";
+        a.sort((x,y)=>(y.date+(y.startTime||'')).localeCompare(x.date+(x.startTime||'')));
+        a.forEach(ap=>{
+          const uu=u.find(x=>x.id===ap.userId),bb=b.find(x=>x.id===ap.barberId);
+          const ss=(ap.serviceIds||[]).map(id=>s.find(x=>x.id===id)?.name||id).join(", ");
+          const cls=ap.status==="BOOKED"?"bdg-ok":ap.status==="CANCELLED"?"bdg-can":ap.status==="DONE"?"bdg-don":"";
+          const markDoneBtn=ap.status==="BOOKED"?`<button class="btn btn-green btn-sm" onclick="adminMarkDone('${ap.id}')">✅ Mark Done</button>`:"";
+          const tr=document.createElement("tr");
+          tr.innerHTML=`<td>${ap.date||"—"}</td><td style="white-space:nowrap">${ap.startTime||"—"} – ${ap.endTime||"—"}</td><td style="font-weight:600">${uu?uu.name:"—"}</td><td>${uu?uu.phone:"—"}</td><td>${ss||"—"}</td><td>${bb?bb.name:"—"}</td><td><span class="bdg ${cls}">${ap.status||"—"}</span></td><td style="display:flex;gap:6px;flex-wrap:wrap">${markDoneBtn}${ap.status==="BOOKED"?`<button class="btn btn-line btn-sm" onclick="canAp('${ap.id}')">Cancel</button>`:""}<button class="btn btn-red btn-sm" onclick="delAp('${ap.id}')">Delete</button></td>`;
+          tb.appendChild(tr);
+        });
+      }catch{tb.innerHTML=`<tr><td colspan="8" class="empty-r" style="color:var(--err)">Failed to load.</td></tr>`}
+    }
+    async function canAp(id){if(!confirm("Cancel this appointment?"))return;await fetch(`${BASE}/api/appointments/${id}/cancel`,{method:"PATCH"});showToast("Cancelled");loadAppts()}
+    async function delAp(id){if(!confirm("Delete permanently?"))return;await fetch(`${BASE}/api/appointments/${id}`,{method:"DELETE"});showToast("Deleted");loadAppts()}
+    async function adminMarkDone(id){
+      try{
+        await fetch(`${BASE}/api/appointments/${id}/complete`,{method:"PATCH"});
+        showToast("✅ Service marked as done! Earnings updated.");
+        loadAppts();
+      }catch{showToast("Failed. Check server connection.")}
+    }
+
+    async function loadAdSvcs(){
+      const el=document.getElementById("svc-lit");
+      try{
+        const s=await fetch(`${BASE}/api/services`).then(r=>r.json());svcs=s;
+        if(!s.length){el.innerHTML='<div class="empty-r">No services yet.</div>';return}
+        el.innerHTML="";
+        s.forEach(sv=>{const d=document.createElement("div");d.className="li";d.innerHTML=`<div class="li-info"><span class="li-name">${sv.name}</span><span class="li-sub">${sv.duration} min · ₹${sv.price}</span></div><div class="li-act"><button class="btn btn-red btn-sm" onclick="delSvc('${sv.id}')">Delete</button></div>`;el.appendChild(d)});
+      }catch{el.innerHTML='<div class="empty-r" style="color:var(--err)">Failed to load.</div>'}
+    }
+    async function addSvc(){
+      const n=document.getElementById("ns-name").value.trim(),d=document.getElementById("ns-dur").value,p=document.getElementById("ns-price").value,e=document.getElementById("svc-err");
+      if(!n||!d||!p){e.textContent="All fields required.";e.style.display="block";return}e.style.display="none";
+      await fetch(`${BASE}/api/services`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n,duration:parseInt(d),price:parseFloat(p)})});
+      document.getElementById("ns-name").value=document.getElementById("ns-dur").value=document.getElementById("ns-price").value="";
+      showToast("Service added");loadAdSvcs();
+    }
+    async function delSvc(id){if(!confirm("Delete?"))return;await fetch(`${BASE}/api/services/${id}`,{method:"DELETE"});showToast("Deleted");loadAdSvcs()}
+
+    async function loadAdBars(){
+      const el=document.getElementById("bar-lit");
+      try{
+        const bs=await fetch(`${BASE}/api/barbers/all`).then(r=>r.json());bars=bs;
+        if(!bs.length){el.innerHTML='<div class="empty-r">No barbers yet.</div>';return}
+        el.innerHTML="";
+        bs.forEach(b=>{
+          const a=b.available;const d=document.createElement("div");d.className="li";
+          d.innerHTML=`<div class="li-info"><span class="li-name">${b.name}</span><span class="li-sub">${b.specialty}</span>${b.upiId?`<span class="li-sub">UPI: ${b.upiId}</span>`:""}<span class="bdg ${a?"bdg-y":"bdg-n"}">${a?"Available":"Unavailable"}</span></div><div class="li-act"><button class="btn btn-line btn-sm" onclick="togBar('${b.id}')">${a?"Mark Unavailable":"Mark Available"}</button><button class="btn btn-red btn-sm" onclick="delBar('${b.id}')">Delete</button></div>`;
+          el.appendChild(d);
+        });
+      }catch{el.innerHTML='<div class="empty-r" style="color:var(--err)">Failed to load.</div>'}
+    }
+    async function addBar(){
+      const n=document.getElementById("nb-name").value.trim(),s=document.getElementById("nb-spec").value.trim(),u=document.getElementById("nb-upi").value.trim(),e=document.getElementById("bar-err");
+      if(!n||!s){e.textContent="Name and specialty required.";e.style.display="block";return}e.style.display="none";
+      await fetch(`${BASE}/api/barbers`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n,specialty:s,available:true,upiId:u})});
+      document.getElementById("nb-name").value=document.getElementById("nb-spec").value=document.getElementById("nb-upi").value="";
+      showToast("Barber added");loadAdBars();
+    }
+    async function togBar(id){await fetch(`${BASE}/api/barbers/${id}/toggle`,{method:"PATCH"});showToast("Updated");loadAdBars()}
+    async function delBar(id){if(!confirm("Delete?"))return;await fetch(`${BASE}/api/barbers/${id}`,{method:"DELETE"});showToast("Deleted");loadAdBars()}
+
+    /* ================================================================
+       TODAY'S QUEUE
+    ================================================================ */
+    async function renderTodayQueue(){
+      const qEl=document.getElementById("today-queue-list"),revEl=document.getElementById("today-revenue-summary");
+      qEl.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:.82rem;text-align:center;padding:20px">Loading...</div>';
+      try{
+        const[appts,users,barbers,services]=await Promise.all([
+          fetch(`${BASE}/api/appointments/all`).then(r=>r.json()),
+          fetch(`${BASE}/api/users/all`).then(r=>r.json()),
+          fetch(`${BASE}/api/barbers/all`).then(r=>r.json()),
+          fetch(`${BASE}/api/services`).then(r=>r.json())
+        ]);
+        const today=todayStr();
+        const todayAppts=appts.filter(a=>a.date===today&&a.status==="BOOKED").sort((a,b)=>(a.startTime||"").localeCompare(b.startTime||""));
+        if(!todayAppts.length){qEl.innerHTML='<div style="color:rgba(255,255,255,.4);font-size:.82rem;text-align:center;padding:20px">No bookings for today.</div>'}
+        else{
+          qEl.innerHTML="";const nowMins=new Date().getHours()*60+new Date().getMinutes();
+          todayAppts.forEach(ap=>{
+            const uu=users.find(x=>x.id===ap.userId),bb=barbers.find(x=>x.id===ap.barberId);
+            const ss=(ap.serviceIds||[]).map(id=>services.find(x=>x.id===id)?.name||id).join(", ");
+            const slotMins=ap.startTime?parseSlotToMins(ap.startTime):9999;
+            const diff=slotMins-nowMins;
+            const badgeText=diff>=0&&diff<=30?"🔴 In "+diff+" min":diff>=0&&diff<=60?"🟡 Soon":"🟢 Upcoming";
+            const item=document.createElement("div");item.className="notif-item";
+            item.innerHTML=`<div class="notif-item-left"><div class="ni-name">👤 ${uu?uu.name:"Customer"}</div><div class="ni-svc">💈 ${ss}</div><div class="ni-time">🕐 ${ap.startTime||"TBD"} • Barber: ${bb?bb.name:"—"}</div></div><span class="ni-badge${diff>=0&&diff<=30?" soon":""}">${badgeText}</span>`;
+            qEl.appendChild(item);
+          });
+        }
+        // Revenue from DONE appointments only
+        const calcRev=list=>list.reduce((sum,a)=>sum+(a.serviceIds||[]).reduce((s,sid)=>{const sv=services.find(x=>x.id===sid);return s+(sv?sv.price:0)},0),0);
+        const doneToday=appts.filter(a=>a.date===today&&a.status==="DONE");
+        revEl.innerHTML=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px">
+          <div style="text-align:center;padding:12px;background:var(--gold-bg);border-radius:var(--r);border:1px solid #e8c86a"><div style="font-size:1.3rem;font-weight:800;color:var(--gold)">₹${calcRev(doneToday).toLocaleString("en-IN")}</div><div style="font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:4px">Today's Revenue</div></div>
+          <div style="text-align:center;padding:12px;background:#dbeafe;border-radius:var(--r);border:1px solid #93c5fd"><div style="font-size:1.3rem;font-weight:800;color:#1e40af">${doneToday.length}</div><div style="font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:4px">Completed Today</div></div>
+        </div>`;
+      }catch{qEl.innerHTML='<div style="color:#e74c3c;font-size:.82rem;text-align:center;padding:20px">Failed to load.</div>'}
+    }
+
+    /* ================================================================
+       CLOSURES
+    ================================================================ */
+    function addClosure(){
+      const from=document.getElementById("cl-from").value,to=document.getElementById("cl-to").value,reason=document.getElementById("cl-reason").value.trim(),e=document.getElementById("cl-err");
+      if(!from||!to){e.textContent="Please select both dates.";e.style.display="block";return}
+      if(to<from){e.textContent="'To' must be on or after 'From'.";e.style.display="block";return}
+      e.style.display="none";
+      const cl=getClosures();cl.push({id:Date.now().toString(),from,to,reason});saveClosures(cl);
+      document.getElementById("cl-from").value="";document.getElementById("cl-to").value="";document.getElementById("cl-reason").value="";
+      showToast("Closure announced ✅");renderClosures();
+    }
+    function removeClosure(id){if(!confirm("Remove?"))return;saveClosures(getClosures().filter(c=>c.id!==id));renderClosures();showToast("Removed")}
+    function renderClosures(){
+      const el=document.getElementById("closure-list"),list=getClosures().sort((a,b)=>a.from.localeCompare(b.from));
+      if(!list.length){el.innerHTML='<div class="empty-r">No closures announced.</div>';return}
+      el.innerHTML="";const today=todayStr();
+      list.forEach(c=>{
+        const active=today>=c.from&&today<=c.to,past=today>c.to;
+        const label=active?"🟡 Active":past?"⚫ Past":"🟢 Upcoming";
+        const d=document.createElement("div");d.className="closure-item";
+        d.innerHTML=`<div><div class="ci-dates">📅 ${fmtDate(c.from)} — ${fmtDate(c.to)}</div>${c.reason?`<div class="ci-reason">📌 ${c.reason}</div>`:""}</div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span class="ci-badge">${label}</span>${!past?`<button class="btn btn-red btn-sm" onclick="removeClosure('${c.id}')">Remove</button>`:""}</div>`;
+        el.appendChild(d);
+      });
+    }
+
+    /* ================================================================
+       EARNINGS — counts DONE appointments (not BOOKED)
+    ================================================================ */
+    function setEarnPeriod(p,btn){earnPeriod=p;document.querySelectorAll(".ef-btn").forEach(b=>b.classList.remove("on"));btn.classList.add("on");renderEarnings()}
+    function calcBarberEarning(appts,services,barberId,from,to){
+      // Only DONE appointments count towards earnings
+      const mine=appts.filter(a=>a.status==="DONE"&&a.barberId===barberId&&a.date>=from&&a.date<=to);
+      const total=mine.reduce((sum,a)=>sum+(a.serviceIds||[]).reduce((s,sid)=>{const sv=services.find(x=>x.id===sid);return s+(sv?sv.price:0)},0),0);
+      return{count:mine.length,total};
+    }
+    async function renderEarnings(){
+      const grid=document.getElementById("earn-grid");
+      try{
+        const[appts,barbers,services]=await Promise.all([fetch(`${BASE}/api/appointments/all`).then(r=>r.json()),fetch(`${BASE}/api/barbers/all`).then(r=>r.json()),fetch(`${BASE}/api/services`).then(r=>r.json())]);
+        bars=barbers;
+        const{from,to}=periodRange(earnPeriod);
+        const labels={day:"Today",week:"This Week",month:"This Month"};
+        document.getElementById("earn-period-lbl").textContent=labels[earnPeriod];
+        grid.innerHTML="";
+        barbers.forEach((b,i)=>{
+          const{count,total}=calcBarberEarning(appts,services,b.id,from,to);
+          const avg=count?Math.round(total/count):0,color=COLORS[i%COLORS.length];
+          const days7=lastNDays(7),spark=days7.map(day=>calcBarberEarning(appts,services,b.id,day,day).total);
+          const card=document.createElement("div");card.className="earn-card";
+          card.innerHTML=`<div class="earn-card-top"><div class="earn-av" style="background:${color}">${b.name[0].toUpperCase()}</div><div><div class="earn-name">${b.name}</div><div class="earn-spec">${b.specialty}</div></div></div><div class="earn-stats"><div class="earn-stat"><div class="earn-stat-val">₹${total.toLocaleString("en-IN")}</div><div class="earn-stat-lbl">${labels[earnPeriod]}</div></div><div class="earn-stat"><div class="earn-stat-val">${count}</div><div class="earn-stat-lbl">Jobs Done</div></div><div class="earn-stat"><div class="earn-stat-val">₹${avg.toLocaleString("en-IN")}</div><div class="earn-stat-lbl">Avg/Job</div></div></div><div class="earn-chart-wrap"><canvas id="spark-${b.id}"></canvas></div>`;
+          grid.appendChild(card);
+          requestAnimationFrame(()=>{const ctx=document.getElementById(`spark-${b.id}`);if(!ctx)return;new Chart(ctx,{type:"line",data:{labels:days7.map(d=>{const[,m,dd]=d.split("-");return`${+dd}/${+m}`}),datasets:[{data:spark,borderColor:color,backgroundColor:color+"28",borderWidth:2,pointRadius:3,tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`₹${c.raw}`}}},scales:{x:{display:false},y:{display:false,min:0}}}})});
+        });
+        if(earnBarChart)earnBarChart.destroy();
+        earnBarChart=new Chart(document.getElementById("earn-bar-chart"),{type:"bar",data:{labels:barbers.map(b=>b.name),datasets:[{label:"Earnings (₹)",data:barbers.map((b,i)=>calcBarberEarning(appts,services,b.id,from,to).total),backgroundColor:barbers.map((_,i)=>COLORS[i%COLORS.length]),borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`₹${c.raw.toLocaleString("en-IN")}`}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>`₹${v}`},grid:{color:"rgba(0,0,0,.05)"}},x:{grid:{display:false}}}}});
+        if(!selectedTrendBarber&&barbers.length)selectedTrendBarber=barbers[0].id;
+        const selEl=document.getElementById("earn-barber-sel");selEl.innerHTML="";
+        barbers.forEach((b,i)=>{const color=COLORS[i%COLORS.length];const btn=document.createElement("button");btn.className="ebs-btn";btn.textContent=b.name;if(b.id===selectedTrendBarber){btn.style.background=color;btn.style.borderColor=color;btn.style.color="#fff"}btn.onclick=()=>{selectedTrendBarber=b.id;renderEarnings()};selEl.appendChild(btn)});
+        const days14=lastNDays(14),trendData=days14.map(day=>calcBarberEarning(appts,services,selectedTrendBarber,day,day).total);
+        const trendIdx=barbers.findIndex(b=>b.id===selectedTrendBarber),trendColor=COLORS[trendIdx>=0?trendIdx%COLORS.length:0];
+        if(earnLineChart)earnLineChart.destroy();
+        earnLineChart=new Chart(document.getElementById("earn-line-chart"),{type:"line",data:{labels:days14.map(d=>{const[,m,dd]=d.split("-");return`${+dd}/${+m}`}),datasets:[{label:"Daily Earnings (₹)",data:trendData,borderColor:trendColor,backgroundColor:trendColor+"28",borderWidth:2.5,pointRadius:4,tension:.4,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`₹${c.raw.toLocaleString("en-IN")}`}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>`₹${v}`},grid:{color:"rgba(0,0,0,.05)"}},x:{grid:{color:"rgba(0,0,0,.03)"}}}}});
+      }catch(err){console.error(err);grid.innerHTML='<div class="empty-r" style="color:var(--err);grid-column:1/-1">Could not load earnings. Make sure the server is running.</div>'}
+    }
+
+    /* ================================================================
+       REVIEWS
+    ================================================================ */
+    async function renderReviews(){
+      const el=document.getElementById("reviews-list");
+      el.innerHTML='<div class="empty-r">Loading...</div>';
+      try{
+        const[reviews,barbers]=await Promise.all([
+          fetch(`${BASE}/api/reviews/all`).then(r=>r.json()),
+          fetch(`${BASE}/api/barbers/all`).then(r=>r.json())
+        ]);
+        if(!reviews.length){el.innerHTML='<div class="empty-r">No reviews yet.</div>';return}
+        reviews.sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+
+        // Per-barber averages
+        const avgMap={};
+        barbers.forEach(b=>{
+          const mine=reviews.filter(r=>r.barberId===b.id);
+          if(mine.length){const avg=(mine.reduce((s,r)=>s+r.rating,0)/mine.length).toFixed(1);avgMap[b.id]={avg,count:mine.length,name:b.name}}
+        });
+        // Summary cards
+        let summaryHtml='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">';
+        Object.values(avgMap).forEach(x=>{
+          summaryHtml+=`<div class="review-avg">⭐ ${x.avg} <span style="color:var(--muted);font-weight:400">${x.name} (${x.count} reviews)</span></div>`;
+        });
+        summaryHtml+='</div>';
+
+        el.innerHTML=summaryHtml;
+        reviews.forEach(rv=>{
+          const card=document.createElement("div");card.className="review-card";
+          card.innerHTML=`
+            <div class="review-card-top">
+              <div><div class="review-customer">👤 ${rv.userName||"Customer"}</div><div class="review-barber">✂️ ${rv.barberName||"—"}</div></div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="review-stars">${starsHtml(rv.rating)}</div>
+                <button class="btn btn-red btn-sm" onclick="deleteReview('${rv.id}')">Delete</button>
+              </div>
+            </div>
+            ${rv.comment?`<div class="review-comment-txt">"${rv.comment}"</div>`:""}
+            <div class="review-date">${rv.date?fmtDate(rv.date):""}</div>`;
+          el.appendChild(card);
+        });
+      }catch{el.innerHTML='<div class="empty-r" style="color:var(--err)">Failed to load reviews.</div>'}
+    }
+    async function deleteReview(id){
+      if(!confirm("Delete this review?"))return;
+      try{
+        await fetch(`${BASE}/api/reviews/${id}`,{method:"DELETE"});
+        showToast("Review deleted");renderReviews();
+      }catch{showToast("Failed to delete.")}
+    }
+
+    /* ================================================================
+       UTILS
+    ================================================================ */
+    function switchTab(id,el){document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));document.querySelectorAll(".tp").forEach(p=>p.classList.remove("on"));el.classList.add("on");document.getElementById(id).classList.add("on")}
+    function showA(t){document.getElementById(`a-${t}`).style.display="block"}
+    function hideA(){["ok","warn","err"].forEach(t=>document.getElementById(`a-${t}`).style.display="none")}
+    function showE(m){document.getElementById("a-err-t").textContent=m;showA("err")}
+    function showToast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";clearTimeout(t._t);t._t=setTimeout(()=>t.style.display="none",2800)}
+</script>
+</body>
+</html>
